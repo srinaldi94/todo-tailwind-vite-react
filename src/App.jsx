@@ -1,46 +1,76 @@
-import CrossIcons from "./components/icons/CrossIcon";
-import MoonIcon from "./components/icons/MoonIcon";
+import { useState } from "react";
+import Header from "./components/Header";
+import TodoCalculado from "./components/TodoCalculado";
+import TodoCreate from "./components/TodoCreate";
+import TodoFilter from "./components/TodoFilter";
+import TodoList from "./components/TodoList";
+
+const initialStateTodos = [
+  {id: 1,title: 'Complete online javascript', completed: true}, 
+  {id: 2,title: 'Go to the gym', completed: false}, 
+  {id: 3,title: '10 minutes meditation', completed: false}, 
+  {id: 4,title: 'Pick up groceries', completed: false},
+  {id: 5,title: 'Complete todo app', completed: false}
+]
 
 const App = () => {
+
+  const [todos, setTodos] = useState(initialStateTodos);
+
+  const createTodo = (title) => {
+    const newTodo = {
+          id: Date.now(),
+          title: title.trim(),
+          completed: false
+    }
+    setTodos([...todos, newTodo]);
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter( todo => todo.id !== id));
+  };
+
+  const updateTodo = (id) => {
+    setTodos(todos.map(todo => todo.id === id ? {...todo, completed: !todo.completed} : todo))
+  };
+
+  const computedItemsLeft = todos.filter(todo => !todo.completed).length;
+
+  const clearComplete = () => {
+    setTodos(todos.filter(todo => !todo.completed));
+  }
+
+  const [filter, setFilter] = useState("all")
+
+  const filteredTodos = () => {
+      switch (filter) {
+        case 'all':
+          return todos;
+        case 'active': 
+          return todos.filter( todo => !todo.completed);
+        case 'completed':
+          return todos.filter( todo => todo.completed);
+        default:
+          return todos;
+      } 
+  }
+
+  const changeFilter = (filter) => setFilter(filter);
+
   return (
     <div className="bg-[url('./assets/images/bg-desktop-light.jpg')] bg-contain bg-no-repeat bg-gray-300 min-h-screen">
-      <header className="container mx-auto px-4 pt-8">
-        <div className="flex justify-between">
-          <h1 className="text-3xl font-semibold uppercase tracking-[0.3em] text-white">
-            TODO
-          </h1>
-          <button><MoonIcon fill="#fff"/></button>
-        </div>
-        <form className="rounded-md bg-white overflow-hidden py-4 flex gap-4 items-center px-4 mt-8">
-          <span className="rounded-full border-2 w-5 h-5 inline-block"></span>
-          <input className="w-full text-gray-400 outline-none" type="text" placeholder="Create a new todo . . ." />
-        </form>
-      </header>
+      <Header/>
 
       <main className="container mx-auto px-4 mt-8">
-        <div className="bg-white rounded-md [&>article]:p-4">
+        <TodoCreate createTodo={createTodo}/>
 
-          <article className="flex gap-4 border-b-gray-400 border-b">
-            <button className="rounded-full border-2 w-5 h-5 inline-block flex-none"></button>
-            <p className="text-gray-600 grow">Complete online Javascript curse in bluuweb</p>
-            <button className="flex-none"><CrossIcons/></button>
-          </article>
+        <TodoList todos={filteredTodos()} deleteTodo={deleteTodo} updateTodo={updateTodo}/>
 
-          <section className="px-4 py-4 flex justify-between">
-            <span className="text-gray-400">5 items lefth</span>
-            <button className="text-gray-400">Clear completed</button>
-          </section>
+        <TodoCalculado computedItemsLeft={computedItemsLeft} clearComplete={clearComplete}/>
 
-        </div>
+        <TodoFilter changeFilter={changeFilter} filter={filter}/>
       </main>
 
-      <section className="container mx-auto px-4">
-        <div className="bg-white mt-8 p-4 rounded-md flex justify-center gap-4">
-          <button className="text-blue-600">All</button>
-          <button className="hover:text-blue-600">Active</button>
-          <button className="hover:text-blue-600">Completed</button>
-        </div>
-      </section>
 
       <p className="text-center mt-8">Drag and drop</p>
     </div>
